@@ -115,49 +115,54 @@ class Triangle
 	end
       #end
     end
-    puts "Max Sum:#{maxSum} Max Path:#{maxPath}"    
+    puts "Max Sum:#{maxSum} Max Path:#{maxPath} Sum Count:#{maxPath.count}"    
   end
   def findLargestPath(node, currentPath)
-    if !RubyProf.running?
-      RubyProf.start
-    end
     path = currentPath.push(node.value)
     nodeSol = []
     puts "Value:#{node.value} Index:#{node.index}"
     if node==@rootNode
       puts "Root found start"
-      result = RubyProf.stop
-      printer = RubyProf::GraphPrinter.new(result)
-      printer.print(STDOUT, {})
       puts "Root found stop"
-      return [[node.value]]
+      nodeSol = [[node.value]]
+      @partialSolutions.merge!({node.index => nodeSol})
+      return nil#[[node.value]]
 
       #@paths.push(path)
       #puts "Sum:#{path.reduce{|a,b| a+b}} Node Count:#{path.count==100} Total Paths:#{@paths.count}"
     end
     #puts "Parent count: #{node.parentNodes.count} Parents:#{node.parentNodes.map{|a| a.value}} Nodes: #{path}"
-    puts "check is there is a partial solution"
     if @partialSolutions[node.index]
       nodeSol=@partialSolutions[node.index]
       puts "#{node.value} Partial Solution Found at index #{node.index}"
     else
       node.parentNodes.each do |parentNode|
-        nodeSol.concat(findLargestPath(parentNode,path.dup))
-	#puts "#{node.value} results from parent #{nodeSol}"
+        findLargestPath(parentNode,path.dup)
+        #puts "#{node.value} results from parent #{@partialSolutions[parentNode.index]}"
+        nodeSol.concat(@partialSolutions[parentNode.index])#.concat([node.value])
       end
       nodeSol.map!{|a| [node.value].concat(a)}
       puts "#{node.value} No partial solution found go deeper at index #{node.index}"
     end
-    puts "Merging soution start"
-    @partialSolutions.merge!({node.index => nodeSol})
-    puts "Merging solution complete"
+    #only pass on most efficient route
+    maxPath =[]
+    maxSum = 0
+    nodeSol.each do |sol|
+      #puts "Node: #{node.value} PSol #{sol}"
+      sum=sol.reduce {|a,b| a+b}
+      if maxSum<sum
+        maxSum=sum
+        maxPath=sol
+      end
+    end
+    @partialSolutions.merge!({node.index => [maxPath]})
     @tCount=@tCount+1
     puts "Partial Solution count:#{@partialSolutions.count}"
-    puts "Sol Count: #{nodeSol}"
-    return nodeSol
+    #puts "Sol Count: #{nodeSol}"
+    return nil#nodeSol
   end
 end
 
 if __FILE__ == $0 
-  Triangle.new("./med_triangle.txt")
+  Triangle.new("./triangle.txt")
 end
