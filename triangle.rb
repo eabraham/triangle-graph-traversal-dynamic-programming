@@ -97,71 +97,57 @@ class Triangle
     previousLevelNodes.each do |node|
       findLargestPath(node,[])
     end
-    #puts @paths
-    #puts @paths.map{|a| a.count}
-    #puts @paths.select{|a| a.count==level-1}
     maxPath = []
     maxSum =0
-    puts "zTraversal count #{@tCount}"
     @partialSolutions.keys.each do |sol|
-      #if @partialSolutions[sol].size==level-1
-	#@partialSolutions[sol].reduce{|a,b| puts "#{a} #{b}"}
-	@partialSolutions[sol].each do |s|
-          sum=s.reduce {|a,b| a+b}
-	  if sum>maxSum
-	    maxSum=sum
-	    maxPath=s
-	  end
-	end
-      #end
+      @partialSolutions[sol].each do |s|
+        sum=s.reduce {|a,b| a+b}
+        if sum>maxSum
+          maxSum=sum
+          maxPath=s
+        end
+      end
     end
-    puts "Max Sum:#{maxSum} Max Path:#{maxPath} Sum Count:#{maxPath.count}"    
+    puts "Max Sum:#{maxSum} Max Path:#{maxPath}"    
   end
   def findLargestPath(node, currentPath)
     path = currentPath.push(node.value)
-    nodeSol = []
-    puts "Value:#{node.value} Index:#{node.index}"
+    nodeSolutions = []
     if node==@rootNode
-      puts "Root found start"
-      puts "Root found stop"
-      nodeSol = [[node.value]]
-      @partialSolutions.merge!({node.index => nodeSol})
-      return nil#[[node.value]]
-
-      #@paths.push(path)
-      #puts "Sum:#{path.reduce{|a,b| a+b}} Node Count:#{path.count==100} Total Paths:#{@paths.count}"
-    end
-    #puts "Parent count: #{node.parentNodes.count} Parents:#{node.parentNodes.map{|a| a.value}} Nodes: #{path}"
-    if @partialSolutions[node.index]
-      nodeSol=@partialSolutions[node.index]
-      puts "#{node.value} Partial Solution Found at index #{node.index}"
+      #Found the root node
+      nodeSolutions = [[node.value]]
+    elsif @partialSolutions[node.index]
+      nodeSolutions=@partialSolutions[node.index]
     else
       node.parentNodes.each do |parentNode|
         findLargestPath(parentNode,path.dup)
-        #puts "#{node.value} results from parent #{@partialSolutions[parentNode.index]}"
-        nodeSol.concat(@partialSolutions[parentNode.index])#.concat([node.value])
+        nodeSolutions.concat(@partialSolutions[parentNode.index])
       end
-      nodeSol.map!{|a| [node.value].concat(a)}
-      puts "#{node.value} No partial solution found go deeper at index #{node.index}"
+      nodeSolutions.map!{|a| [node.value].concat(a)}
     end
     #only pass on most efficient route
+    maxPath = maxSumPath(nodeSolutions)
+    @partialSolutions.merge!({node.index => [maxPath]})
+    return
+  end
+
+  def maxSumPath(nodeSolutions)
+    #inputs: nodeSolutions is an array of node paths from the current node to root
+    #outputs: maxPath is the path with the greatest sum from the current node to root
     maxPath =[]
     maxSum = 0
-    nodeSol.each do |sol|
-      #puts "Node: #{node.value} PSol #{sol}"
+    nodeSolutions.each do |sol|
       sum=sol.reduce {|a,b| a+b}
       if maxSum<sum
         maxSum=sum
         maxPath=sol
       end
     end
-    @partialSolutions.merge!({node.index => [maxPath]})
-    @tCount=@tCount+1
-    puts "Partial Solution count:#{@partialSolutions.count}"
-    #puts "Sol Count: #{nodeSol}"
-    return nil#nodeSol
+    return maxPath
   end
 end
+
+
 
 if __FILE__ == $0 
   Triangle.new("./triangle.txt")
