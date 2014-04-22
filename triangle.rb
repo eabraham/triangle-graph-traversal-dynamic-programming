@@ -1,7 +1,7 @@
 require 'ruby-prof'
 
 class TriangleNode
-    #this node has special propertie, its parents are the two
+    #this node has special properties, its parents are the two
     #nodes up one level and adjacent.  Its children are the two
     #node down one level and adjacent
     #i.e.             1
@@ -33,7 +33,6 @@ private
       if @level==pLevel+1 && (@index==(pIndex+@level) || @index==(pIndex+@level+1))
 	return true
       else
-        #puts "(index:#{pIndex} level:#{pLevel}) - Not a valid parent node"
         return false
       end
     end
