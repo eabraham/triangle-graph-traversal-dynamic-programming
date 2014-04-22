@@ -40,7 +40,7 @@ end
 
 class Triangle
 
-  attr_accessor :rootNode, :paths, :partialSolutions
+  attr_accessor :rootNode, :paths, :solutionCache
 
   def initialize(triangleFile)
     #load triangle file into triangle graph
@@ -67,7 +67,7 @@ class Triangle
     end
 
     #interate over each of the leaf nodes and find the largest sum path
-    @partialSolutions={}
+    @solutionCache={}
     previousLevelNodes.each do |node|
       findLargestPath(node,[])
     end
@@ -75,8 +75,8 @@ class Triangle
     #iterate over each nodes solution to find the path with the max sum
     maxPath = []
     maxSum =0
-    @partialSolutions.keys.each do |sol|
-      @partialSolutions[sol].each do |s|
+    @solutionCache.keys.each do |sol|
+      @solutionCache[sol].each do |s|
         sum=s.reduce {|a,b| a+b}
         if sum>maxSum
           maxSum=sum
@@ -93,20 +93,20 @@ class Triangle
     if node==@rootNode
       #Found the root node
       nodeSolutions = [[node.value]]
-    elsif @partialSolutions[node.index]
+    elsif @solutionCache[node.index]
       #Found node with optimal path already calculated
-      nodeSolutions=@partialSolutions[node.index]
+      nodeSolutions=@solutionCache[node.index]
     else
       #Found node that needs its optimal path calculated
       node.parentNodes.each do |parentNode|
         findLargestPath(parentNode,path.dup)
-        nodeSolutions.concat(@partialSolutions[parentNode.index])
+        nodeSolutions.concat(@solutionCache[parentNode.index])
       end
       nodeSolutions.map!{|a| [node.value].concat(a)}
     end
     #only pass on most efficient route for node
     maxPath = maxSumPath(nodeSolutions)
-    @partialSolutions.merge!({node.index => [maxPath]})
+    @solutionCache.merge!({node.index => [maxPath]})
     return
   end
 
